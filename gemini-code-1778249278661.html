@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADN Travels - Console V2.2</title>
+    <style>
+        :root {
+            /* MODO CLARO ORIGINAL */
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --primary: #003366;
+            --accent: #25d366;
+            --border: #e2e8f0;
+            --input-bg: #ffffff;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            /* MODO OSCURO (Gamer Style) */
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --primary: #38bdf8;
+            --accent: #22c55e;
+            --border: #334155;
+            --input-bg: #0f172a;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: var(--text); transition: 0.3s; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: var(--shadow); border-top: 8px solid var(--primary); }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .theme-toggle { cursor: pointer; padding: 8px 15px; border-radius: 10px; background: var(--primary); color: var(--card); font-weight: bold; font-size: 11px; transition: 0.2s; }
+        .theme-toggle:hover { opacity: 0.8; }
+
+        .styled-select {
+            appearance: none; width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 12px;
+            background: var(--input-bg); color: var(--text); font-weight: bold; margin-bottom: 20px; outline: none; transition: 0.2s;
+        }
+        .styled-select:focus { border-color: var(--primary); }
+
+        .form-section { display: none; opacity: 0; }
+        .form-section.active { display: block; animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .section { margin-bottom: 15px; padding: 15px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+        .green { border-left: 5px solid #22c55e; }
+        .yellow { border-left: 5px solid #facc15; }
+        .red { border-left: 5px solid #ef4444; }
+
+        label { display: block; font-weight: bold; margin-top: 8px; font-size: 11px; color: var(--primary); text-transform: uppercase; }
+        input, textarea, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid var(--border); border-radius: 8px; background: var(--input-bg); color: var(--text); box-sizing: border-box; font-size: 14px; transition: 0.2s; }
+        input:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+        .toggle-row { display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 10px; border-radius: 8px; margin: 5px 0; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.2s; }
+        .toggle-row input { width: 18px; height: 18px; margin: 0; }
+
+        button { padding: 16px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 15px; width: 100%; margin-top: 10px; }
+        button:active { transform: translateY(1px); }
+        .btn-gen { background: var(--primary); color: var(--card); }
+        .btn-wa { background: var(--accent); color: white; }
+        .btn-copy { background: #64748b; color: white; }
+
+        #output-container { margin-top: 25px; padding: 15px; background: var(--bg); border: 2px dashed var(--primary); border-radius: 12px; }
+        pre { white-space: pre-wrap; font-family: 'Segoe UI', sans-serif; font-size: 13px; margin: 0; color: var(--text); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>ADN Travels ✈️</h1>
+        <div class="theme-toggle" id="themeBtn" onclick="toggleTheme()">CLARO / OSCURO</div>
+    </div>
+
+    <select class="styled-select" id="servicioSelector" onchange="switchForm()">
+        <option value="conBoletos">✈️ TRASLADO CON BOLETOS</option>
+        <option value="sinBoletos">🏨 TRASLADO SIN BOLETOS</option>
+        <option value="motos">🏍️ RESERVA DE MOTOS</option>
+        <option value="ejecutivo">💎 EJECUTIVO VIP</option>
+    </select>
+
+    <label class="toggle-row">
+        <input type="checkbox" id="isMod" onchange="toggleMod()"> ¿ES UNA MODIFICACIÓN?
+    </label>
+
+    <div id="sectionMod" class="section hidden" style="display:none; border-left: 5px solid var(--primary);">
+        <label>Motivos del cambio</label>
+        <textarea id="motivosMod" rows="2"></textarea>
+    </div>
+
+    <div id="formConBoletos" class="form-section active">
+        <div class="section">
+            <label>Pax Líder</label><input type="text" id="nombre">
+            <div class="grid-3"><input type="text" id="adt" placeholder="ADT"><input type="text" id="chd" placeholder="CHD"><input type="text" id="inf" placeholder="INF"></div>
+        </div>
+        <div class="section green"><label>🟩 IN</label><input type="date" id="fechaIn">
+            <div class="grid"><input type="text" id="aeroIn" placeholder="Aero/Naviera"><input type="text" id="vueloIn" placeholder="Vuelo/Ferry"></div>
+            <input type="text" id="rutaIn" placeholder="Ruta"><div class="grid"><input type="time" id="saleIn"><input type="time" id="llegaIn"></div>
+            <input type="text" id="hotelIn" placeholder="Hotel">
+        </div>
+        <div class="section yellow"><label>🟨 INTERTRASLADO</label><input type="date" id="interFecha"><div class="grid"><input type="text" id="interDesde" placeholder="Desde"><input type="text" id="interHasta" placeholder="Hasta"></div></div>
+        <div class="section red"><label>🟥 OUT</label><input type="date" id="fechaOut">
+            <div class="grid"><input type="text" id="aeroOut" placeholder="Aero/Naviera"><input type="text" id="vueloOut" placeholder="Vuelo/Ferry"></div>
+            <input type="text" id="rutaOut" placeholder="Ruta"><div class="grid"><input type="time" id="saleOut"><input type="time" id="llegaOut"></div>
+            <input type="text" id="hotelOut" placeholder="Hotel">
+        </div>
+        <div class="section"><div class="grid"><input type="text" id="loc" placeholder="Localizador"><input type="text" id="tel" placeholder="Contacto"></div>
+            <div class="grid-3"><input type="date" id="tourF"><input type="text" id="tourM" placeholder="Tour Modo"><input type="text" id="tourP" placeholder="Parada"></div>
+            <textarea id="obs" placeholder="OBSERVACIÓN"></textarea>
+        </div>
+    </div>
+
+    <div id="formSinBoletos" class="form-section">
+        <div class="section">
+            <label>Pax Líder</label><input type="text" id="nombreS">
+            <div class="grid-3"><input type="text" id="adtS" placeholder="ADT"><input type="text" id="chdS" placeholder="CHD"><input type="text" id="infS" placeholder="INF"></div>
+        </div>
+        <div class="section green"><label>🟩 IN</label><input type="date" id="fechaInS"></div>
+        <div class="section yellow"><label>🟨 INTERTRASLADO</label><input type="date" id="interFechaS"><div class="grid"><input type="text" id="interDesdeS" placeholder="Desde"><input type="text" id="interHastaS" placeholder="Hasta"></div></div>
+        <div class="section red"><label>🟥 OUT</label><input type="date" id="fechaOutS"></div>
+        <div class="section"><input type="text" id="hotelS" placeholder="Hotel"><input type="text" id="telS" placeholder="Contacto">
+            <div class="grid"><input type="text" id="tourNS" placeholder="Nombre Tour"><input type="date" id="tourFS"></div>
+            <textarea id="obsS" placeholder="OBSERVACIÓN"></textarea>
+        </div>
+    </div>
+
+    <div id="formMotos" class="form-section">
+        <div class="section" style="border-left: 5px solid var(--primary);">
+            <label>Modelo Toro</label>
+            <select id="motoModelo">
+                <option value="Toro Fox">Toro Fox</option>
+                <option value="Toro Jaguar">Toro Jaguar</option>
+                <option value="Toro Scrambler">Toro Scrambler</option>
+                <option value="Toro Rex">Toro Rex</option>
+            </select>
+            <div class="grid">
+                <label class="toggle-row"><input type="checkbox" id="mCam"> Cámara</label>
+                <label class="toggle-row"><input type="checkbox" id="mMal"> Maletero</label>
+            </div>
+        </div>
+        <div class="section green"><label>✅ ENTREGA IN</label><input type="date" id="mInF"><div class="grid"><input type="time" id="mInH"><input type="text" id="mInL" placeholder="Lugar"></div></div>
+        <div class="section red"><label>🔴 ENTREGA OUT</label><input type="date" id="mOutF"><div class="grid"><input type="time" id="mOutH"><input type="text" id="mOutL" placeholder="Lugar"></div></div>
+        <div class="section">
+            <label>Datos Pax</label>
+            <div class="grid"><input type="text" id="mAge" placeholder="Edad"><input type="text" id="mTel" placeholder="Teléfono"></div>
+            <input type="text" id="mLic" placeholder="Licencia"><input type="text" id="mId" placeholder="ID / Pasaporte">
+            <input type="text" id="mLid" placeholder="📱 Número Pax Líder"><input type="text" id="mAco" placeholder="📱 Número Acompañante">
+            <textarea id="mObs" placeholder="OBSERVACIÓN"></textarea>
+        </div>
+    </div>
+
+    <div id="formEjecutivo" class="form-section">
+        <div class="section" style="border-left: 5px solid #8b5cf6;">
+            <label>💎 Pax Líder</label>
+            <input type="text" id="nombreV">
+            <div class="grid-3">
+                <input type="text" id="adtV" placeholder="ADT">
+                <input type="text" id="chdV" placeholder="CHD">
+                <input type="text" id="infV" placeholder="INF">
+            </div>
+        </div>
+        <div class="section">
+            <label>Detalles del Servicio</label>
+            <input type="date" id="fechaV">
+            <input type="text" id="rutaV" placeholder="Ruta">
+            <div class="grid">
+                <input type="text" id="modalidadV" placeholder="Modalidad">
+                <input type="text" id="esperaV" placeholder="Tiempo de espera">
+            </div>
+            <textarea id="obsV" placeholder="ACOTACIÓN"></textarea>
+        </div>
+    </div>
+
+    <button class="btn-gen" onclick="generar()">✨ GENERAR MENSAJE</button>
+    <div id="output-container"><pre id="output">Los datos aparecerán aquí...</pre></div>
+    
+    <div class="grid">
+        <button id="btnCopy" class="btn-copy" onclick="copiarTexto()">📋 COPIAR</button>
+        <button class="btn-wa" onclick="enviarWA()">💬 WHATSAPP</button>
+    </div>
+</div>
+
+<script>
+    // MEMORIA DEL MODO OSCURO
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    }
+
+    function switchForm() {
+        const val = document.getElementById('servicioSelector').value;
+        document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+        document.getElementById('form' + val.charAt(0).toUpperCase() + val.slice(1)).classList.add('active');
+    }
+
+    function toggleMod() { document.getElementById('sectionMod').style.display = document.getElementById('isMod').checked ? 'block' : 'none'; }
+    
+    function v(id) {
+        const el = document.getElementById(id);
+        return (el && el.value.trim() !== "") ? el.value.trim() : "-";
+    }
+
+    function fD(f) { 
+        if(!f || f === "-") return "-"; 
+        const p = f.split("-"); 
+        return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : "-"; 
+    }
+
+    function generar() {
+        const tipo = document.getElementById('servicioSelector').value;
+        let res = "";
+        if (document.getElementById('isMod').checked) res += `*MODIFICACIÓN DE TRASLADO*\n*MOTIVOS:* ${v('motivosMod')}\n\n`;
+
+        if (tipo === 'motos') {
+            res += `*SOLICITUD DE RESERVA*\n\n✔️ *Motivo:* \n* Moto : ${v('motoModelo')}\n* Cámara: ${document.getElementById('mCam').checked ? 'SÍ' : 'NO'}\n* Maletero : ${document.getElementById('mMal').checked ? 'SÍ' : 'NO'}\n\n✅ *Fecha de entrega In :* ${fD(v('mInF'))}\n* Hora de entrega: ${v('mInH')}\n* Lugar de entrega: ${v('mInL')}\n\n🔴 *Fecha de Entrega Out:* ${fD(v('mOutF'))}\n* Hora de Entrega : ${v('mOutH')}\n* Lugar de Entrega: ${v('mOutL')}\n\n✅ *DATOS DEL PAX :*\n\n* Edad : ${v('mAge')}\n* Teléfono : ${v('mTel')}\n* Licencia : ${v('mLic')}\n* Cédula o pasaporte vigente : ${v('mId')}\n\n📲 Numero de pax lider: ${v('mLid')}\n📲 Número de Acompañante : ${v('mAco')}\n\n✅ Modelo de Moto: ${v('motoModelo')}\n\n *OBSERVACION* : ${v('mObs')}`;
+        } else if (tipo === 'conBoletos') {
+            res += `*SOLICITUD DE TRASLADO*\n_Aeropuerto/Muelle_\n*HTL* _Aeropuerto/Muelle_\n\n*Nombre Pax Líder:* ${v('nombre')}\nCantidad de ADT: ${v('adt')}\nCantidad de CHD: ${v('chd')}\nCantidad de INF: ${v('inf')}\n\n🟩*Fecha IN:*\n${fD(v('fechaIn'))}\nAerolínea ó Naviera: ${v('aeroIn')}\nVuelo ó Ferry: ${v('vueloIn')}\nRuta: ${v('rutaIn')}\nSale: ${v('saleIn')} | Llega: ${v('llegaIn')}\nHotel: ${v('hotelIn')}\n\n🟨*INTERTRASLADO:*\nFecha: ${fD(v('interFecha'))} | Desde: ${v('interDesde')} | Hasta: ${v('interHasta')}\n\n🟥*Fecha OUT:*\n${fD(v('fechaOut'))}\nAerolínea ó Naviera: ${v('aeroOut')}\nVuelo ó Ferry: ${v('vueloOut')}\nRuta: ${v('rutaOut')}\nSale: ${v('saleOut')} | Llega: ${v('llegaOut')}\nHotel: ${v('hotelOut')}\n\n_Loc:_ ${v('loc')} | 📱:${v('tel')}\n\n¿TOUR? ${v('tourM')}\nFecha: ${fD(v('tourF'))} | Parada: ${v('tourP')}\n\nOBSERVACIÓN: ${v('obs')}`;
+        } else if (tipo === 'sinBoletos') {
+            res += `*SOLICITUD DE TRASLADO SIN BOLETOS*\n\n_Aeropuerto/Muelle_\n*HTL*\n_Aeropuerto/Muelle_\n\n*Nombre Pax Líder:*\n${v('nombreS')}\nCantidad de ADT: ${v('adtS')}\nCantidad de CHD: ${v('chdS')}\nCantidad de INF: ${v('infS')}\n\n🟩*Fecha IN:*\n${fD(v('fechaInS'))}\n\n🟨*INTERTRASLADO:*\nFecha: ${fD(v('interFechaS'))} | Desde: ${v('interDesdeS')} | Hasta: ${v('interHastaS')}\n\n🟥*Fecha OUT:*\n${fD(v('fechaOutS'))}\n\n*Hotel:* ${v('hotelS')}\n\n📱Número de contacto:\n${v('telS')}\n\n¿LOS PAX CUENTAN CON? \n\nTOUR: ${v('tourNS')}\nFecha: ${fD(v('tourFS'))}\n\nOBSERVACIÓN:\n${v('obsS')}`;
+        } else if (tipo === 'ejecutivo') {
+            res += `*Solicitud de servicio de traslado a disposición según requerimientos:*\n\n` +
+                   `*Traslado Ejecutivo*\n` +
+                   `*_Unidad VIP_* 🚘\n\n` +
+                   `*Pax Líder:* ${v('nombreV')}\n\n` +
+                   `Cantidad de Pax:\n` +
+                   `ADT: ${v('adtV')}\n` +
+                   `CHD: ${v('chdV')}\n` +
+                   `INF: ${v('infV')}\n\n` +
+                   `Fecha: ${fD(v('fechaV'))}\n\n` +
+                   `Ruta: ${v('rutaV')}\n\n` +
+                   `Modalidad: ${v('modalidadV')}\n\n` +
+                   `Tiempo de espera: ${v('esperaV')}\n\n` +
+                   `ACOTACIÓN: ${v('obsV')}`;
+        }
+        document.getElementById('output').innerText = res;
+    }
+
+    function copiarTexto() {
+        const text = document.getElementById('output').innerText;
+        if (text.includes("Los datos")) return;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById('btnCopy');
+            btn.innerHTML = "✅ ¡LISTO!";
+            setTimeout(() => btn.innerHTML = "📋 COPIAR", 2000);
+        });
+    }
+
+    function enviarWA() { 
+        const text = document.getElementById('output').innerText; 
+        if (text.includes("Los datos")) return;
+        window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank"); 
+    }
+</script>
+</body>
+</html>
